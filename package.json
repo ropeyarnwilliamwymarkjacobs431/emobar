@@ -1,0 +1,40 @@
+{
+  "name": "emobar",
+  "version": "0.1.0",
+  "description": "Emotional status bar companion for Claude Code - makes AI emotional state visible",
+  "type": "module",
+  "bin": {
+    "emobar": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsup --watch"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "statusline",
+    "emotional",
+    "ai",
+    "transparency"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  }
+}
