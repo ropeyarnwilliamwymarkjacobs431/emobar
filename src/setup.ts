@@ -106,26 +106,29 @@ function writeSettings(filePath: string, settings: Record<string, any>): void {
   fs.writeFileSync(filePath, JSON.stringify(settings, null, 2));
 }
 
-export function configureStatusLine(filePath: string = SETTINGS_PATH): void {
+export function configureStatusLine(filePath: string = SETTINGS_PATH, displayFormat: string = "full"): void {
   const settings = readSettings(filePath);
   const current = settings.statusLine;
 
   // Already configured with emobar
   if (current?.command?.includes("emobar")) return;
 
+  const formatArg = displayFormat === "full" ? "" : ` ${displayFormat}`;
+  const emobarCmd = `npx emobar display${formatArg}`;
+
   if (current?.type === "command" && current.command) {
     // Wrap existing command (e.g. ccstatusline) with emobar
     const existingCmd = current.command;
     settings.statusLine = {
       type: "command",
-      command: `bash -c '${existingCmd}; echo -n " "; npx emobar display'`,
+      command: `bash -c '${existingCmd}; echo -n " "; ${emobarCmd}'`,
       padding: current.padding ?? 0,
     };
   } else {
     // No statusline or not command-based — set emobar as the statusline
     settings.statusLine = {
       type: "command",
-      command: "npx emobar display",
+      command: emobarCmd,
       padding: 0,
     };
   }
@@ -177,7 +180,7 @@ export function deployHookScript(hookScriptPath: string = HOOK_SCRIPT_PATH): voi
   fs.copyFileSync(packageHook, hookScriptPath);
 }
 
-export function setup(): void {
+export function setup(displayFormat: string = "full"): void {
   console.log("EmoBar Setup");
   console.log("============\n");
 
@@ -194,8 +197,8 @@ export function setup(): void {
   addHookToSettings();
   console.log(`  Stop hook added to ${SETTINGS_PATH}`);
 
-  configureStatusLine();
-  console.log("  Statusline configured");
+  configureStatusLine(SETTINGS_PATH, displayFormat);
+  console.log(`  Statusline configured (format: ${displayFormat})`);
 
   console.log("\n  EmoBar is active. Claude will perform emotional check-ins from now on.");
 }

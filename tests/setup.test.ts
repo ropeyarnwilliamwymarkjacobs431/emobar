@@ -150,6 +150,24 @@ describe("statusLine integration", () => {
     expect(settings.statusLine.command).toBe("npx emobar display");
   });
 
+  it("wraps with compact format when specified", () => {
+    fs.writeFileSync(tmpFile, JSON.stringify({
+      statusLine: { type: "command", command: "npx -y ccstatusline@latest", padding: 0 },
+    }));
+    configureStatusLine(tmpFile, "compact");
+    const settings = JSON.parse(fs.readFileSync(tmpFile, "utf-8"));
+    expect(settings.statusLine.command).toContain("emobar display compact");
+  });
+
+  it("wraps with minimal format when specified", () => {
+    fs.writeFileSync(tmpFile, JSON.stringify({
+      statusLine: { type: "command", command: "npx -y ccstatusline@latest", padding: 0 },
+    }));
+    configureStatusLine(tmpFile, "minimal");
+    const settings = JSON.parse(fs.readFileSync(tmpFile, "utf-8"));
+    expect(settings.statusLine.command).toContain("emobar display minimal");
+  });
+
   it("restoreStatusLine unwraps to original command", () => {
     fs.writeFileSync(tmpFile, JSON.stringify({
       statusLine: {

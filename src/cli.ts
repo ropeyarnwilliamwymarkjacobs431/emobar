@@ -7,9 +7,11 @@ import fs from "node:fs";
 const command = process.argv[2];
 
 switch (command) {
-  case "setup":
-    setup();
+  case "setup": {
+    const displayFormat = process.argv[3] || "full";
+    setup(displayFormat);
     break;
+  }
 
   case "uninstall":
     uninstall();
@@ -66,12 +68,9 @@ switch (command) {
   default:
     console.log(`EmoBar v0.1.0 - Emotional status bar for Claude Code\n`);
     console.log("Commands:");
-    console.log("  npx emobar setup      Configure EmoBar (hook + CLAUDE.md)");
-    console.log("  npx emobar display    Output emotional state (for statuslines)");
-    console.log("  npx emobar status     Show current configuration");
-    console.log("  npx emobar uninstall  Remove all EmoBar configuration");
-    console.log("\nDisplay formats:");
-    console.log("  npx emobar display          Full format");
-    console.log("  npx emobar display compact  Compact format");
-    console.log("  npx emobar display minimal  Minimal (SI + keyword)");
+    console.log("  npx emobar setup [format]  Configure EmoBar (hook + CLAUDE.md + statusline)");
+    console.log("  npx emobar display [format]  Output emotional state (for statuslines)");
+    console.log("  npx emobar status          Show current configuration");
+    console.log("  npx emobar uninstall       Remove all EmoBar configuration");
+    console.log("\nFormats: full (default), compact, minimal");
 }
