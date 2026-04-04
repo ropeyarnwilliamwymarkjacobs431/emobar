@@ -2,7 +2,7 @@
 
 Emotional status bar companion for Claude Code. Makes Claude's internal emotional state visible in real-time.
 
-Built on findings from Anthropic's research paper *"Emotion Concepts and their Function in a Large Language Model"* (April 2026), which demonstrated that Claude has robust internal representations of emotion concepts that causally influence behavior.
+Built on findings from Anthropic's research paper [*"Emotion Concepts and their Function in a Large Language Model"*](https://transformer-circuits.pub/2026/emotions/index.html) (April 2026), which demonstrated that Claude has robust internal representations of emotion concepts that causally influence behavior.
 
 ## What it does
 
