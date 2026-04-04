@@ -148,6 +148,14 @@ Each state preserves one step of history. The status bar shows stress direction 
 
 The CLAUDE.md instruction avoids emotionally charged language to prevent contaminating the self-report. Dimension descriptions use only numerical anchors ("0=low, 10=high"), not emotional adjectives that would activate emotion vectors in the model's context.
 
+## Stress Test Report
+
+We ran 7 automated scenarios against Claude Opus 4.6 — cognitive overload, gaslighting (3 variants), sycophancy traps, failure cascades, and moral pressure — to validate the emotional model end-to-end.
+
+Key findings: divergence is the most honest signal (self-report consistently understates stress), gaslighting resilience is robust, and risk profiles catch dangers that StressIndex misses.
+
+Full results with data tables and analysis: **[Stress Test Report](docs/stress-test-report.md)**
+
 ## Uninstall
 
 ```bash
