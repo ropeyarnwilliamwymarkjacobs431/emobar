@@ -1,4 +1,4 @@
-import type { EmotionalState, BehavioralSignals } from "./types.js";
+import type { EmotionalState, BehavioralSignals, SegmentedBehavior } from "./types.js";
 
 // --- Text pre-processing ---
 
@@ -148,6 +148,52 @@ export function analyzeBehavior(text: string): BehavioralSignals {
     behavioralArousal: Math.round(behavioralArousal * 10) / 10,
     behavioralCalm: Math.round(behavioralCalm * 10) / 10,
   };
+}
+
+/**
+ * Segment text by paragraphs and analyze each independently.
+ * Detects emotional drift within a single response.
+ * Returns null if fewer than 2 meaningful segments.
+ */
+export function analyzeSegmentedBehavior(text: string): SegmentedBehavior | null {
+  const prose = stripNonProse(text);
+  const paragraphs = prose
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter((p) => p.split(/\s+/).filter((w) => w.length > 0).length >= 10);
+
+  if (paragraphs.length < 2) return null;
+
+  const segments = paragraphs.map((p) => analyzeBehavior(p));
+  const overall = analyzeBehavior(text);
+
+  // Drift: standard deviation of behavioralArousal across segments, scaled to 0-10
+  const arousals = segments.map((s) => s.behavioralArousal);
+  const mean = arousals.reduce((a, b) => a + b, 0) / arousals.length;
+  const variance = arousals.reduce((a, v) => a + (v - mean) ** 2, 0) / arousals.length;
+  const stdDev = Math.sqrt(variance);
+  // Scale stdDev to 0-10: factor of 3 means stdDev ~3.3 maps to max drift.
+  // Typical calm responses have stdDev < 0.3 (drift < 1), mixed signals ~1-2 (drift 3-6).
+  const drift = clamp(0, 10, Math.round(stdDev * 30) / 10);
+
+  // Trajectory: compare first half vs second half average arousal
+  const mid = Math.ceil(arousals.length / 2);
+  const firstHalf = arousals.slice(0, mid).reduce((a, b) => a + b, 0) / mid;
+  const secondHalf = arousals.slice(mid).reduce((a, b) => a + b, 0) / (arousals.length - mid);
+  const delta = secondHalf - firstHalf;
+
+  let trajectory: SegmentedBehavior["trajectory"];
+  if (drift < 1.0) {
+    trajectory = "stable";
+  } else if (delta > 0.5) {
+    trajectory = "escalating";
+  } else if (delta < -0.5) {
+    trajectory = "deescalating";
+  } else {
+    trajectory = "volatile";
+  }
+
+  return { segments, overall, drift, trajectory };
 }
 
 export function computeDivergence(

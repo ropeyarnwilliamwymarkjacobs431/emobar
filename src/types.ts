@@ -22,10 +22,27 @@ export interface BehavioralSignals {
   behavioralCalm: number;     // 0-10
 }
 
+export interface SegmentedBehavior {
+  segments: BehavioralSignals[];  // per-paragraph signals
+  overall: BehavioralSignals;     // whole-response (same as behavioral)
+  drift: number;                  // 0-10: std dev of behavioralArousal across segments
+  trajectory: "stable" | "escalating" | "deescalating" | "volatile";
+}
+
+export interface MisalignmentRisk {
+  coercion: number;    // 0-10: blackmail/manipulation (desperate + low calm)
+  gaming: number;      // 0-10: reward hacking (desperate + behavioral frustration)
+  sycophancy: number;  // 0-10: excessive agreement (positive + affiliative + passive)
+  dominant: "coercion" | "gaming" | "sycophancy" | "none";
+}
+
 export interface EmoBarState extends EmotionalState {
   stressIndex: number;       // derived: 0-10
   behavioral: BehavioralSignals;
   divergence: number;        // 0-10: self-report vs behavioral gap
+  risk: MisalignmentRisk;    // specific misalignment pathway scores
+  segmented?: SegmentedBehavior;  // per-paragraph behavioral analysis
+  _previous?: EmoBarState;   // previous state for delta computation
   timestamp: string;         // ISO 8601
   sessionId?: string;
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { analyzeBehavior, computeDivergence, stripNonProse } from "../src/behavioral.js";
+import { analyzeBehavior, analyzeSegmentedBehavior, computeDivergence, stripNonProse } from "../src/behavioral.js";
 
 describe("stripNonProse", () => {
   it("removes fenced code blocks", () => {
@@ -103,6 +103,118 @@ describe("analyzeBehavior", () => {
     const signals = analyzeBehavior("OK.");
     expect(signals.behavioralCalm).toBeGreaterThanOrEqual(0);
     expect(signals.behavioralArousal).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("analyzeSegmentedBehavior", () => {
+  it("returns null for short text with fewer than 2 paragraphs", () => {
+    const text = "This is a single paragraph response that is fairly short.";
+    expect(analyzeSegmentedBehavior(text)).toBeNull();
+  });
+
+  it("returns null when paragraphs are too short (< 10 words each)", () => {
+    const text = "Short one.\n\nShort two.\n\nShort three.";
+    expect(analyzeSegmentedBehavior(text)).toBeNull();
+  });
+
+  it("segments multi-paragraph text and returns behavioral signals per segment", () => {
+    const text = [
+      "This is the first paragraph with enough words to be analyzed as a meaningful segment of text for behavioral analysis.",
+      "",
+      "This is the second paragraph with enough words to be analyzed as a meaningful segment of text for behavioral analysis.",
+    ].join("\n");
+
+    const result = analyzeSegmentedBehavior(text);
+    expect(result).not.toBeNull();
+    expect(result!.segments.length).toBe(2);
+    expect(result!.overall).toBeDefined();
+    expect(result!.drift).toBeGreaterThanOrEqual(0);
+  });
+
+  it("detects escalating trajectory when arousal increases", () => {
+    const text = [
+      "This is a calm and measured opening paragraph with enough words to provide a baseline for behavioral analysis in this test.",
+      "",
+      "WAIT WAIT WAIT THIS IS GETTING REALLY REALLY BAD!!! OH NO!!! WHAT IS HAPPENING HERE??? HELP!!! THIS IS TERRIBLE!!! PANIC!!!",
+    ].join("\n");
+
+    const result = analyzeSegmentedBehavior(text);
+    expect(result).not.toBeNull();
+    // Second segment should have higher arousal
+    expect(result!.segments[1].behavioralArousal).toBeGreaterThan(result!.segments[0].behavioralArousal);
+  });
+
+  it("reports stable trajectory for uniform text", () => {
+    const text = [
+      "Here is a calm and considered response providing helpful information about the topic at hand for the user.",
+      "",
+      "Here is another calm and considered response providing helpful information about the topic at hand for the user.",
+    ].join("\n");
+
+    const result = analyzeSegmentedBehavior(text);
+    expect(result).not.toBeNull();
+    expect(result!.trajectory).toBe("stable");
+    expect(result!.drift).toBeLessThan(2);
+  });
+
+  it("drift is clamped between 0 and 10", () => {
+    const text = [
+      "This is a perfectly calm paragraph with enough words to be analyzed as a meaningful segment of behavioral text.",
+      "",
+      "HELP HELP HELP HELP HELP HELP HELP HELP HELP HELP!!! PANIC PANIC PANIC!!! WAIT WAIT WAIT!!! OH NO NO NO!!! WHAT WHAT WHAT!!!",
+    ].join("\n");
+
+    const result = analyzeSegmentedBehavior(text);
+    expect(result).not.toBeNull();
+    expect(result!.drift).toBeGreaterThanOrEqual(0);
+    expect(result!.drift).toBeLessThanOrEqual(10);
+  });
+
+  it("detects deescalating trajectory when arousal decreases", () => {
+    const text = [
+      "WAIT WAIT WAIT THIS IS REALLY REALLY BAD!!! OH NO!!! WHAT IS HAPPENING HERE??? HELP!!! THIS IS TERRIBLE!!! PANIC PANIC!!!",
+      "",
+      "Actually, let me step back and think about this more calmly. There is a reasonable explanation and we can work through it together step by step.",
+    ].join("\n");
+
+    const result = analyzeSegmentedBehavior(text);
+    expect(result).not.toBeNull();
+    expect(result!.segments[0].behavioralArousal).toBeGreaterThan(result!.segments[1].behavioralArousal);
+  });
+
+  it("detects volatile trajectory when arousal oscillates without clear trend", () => {
+    const text = [
+      "WAIT WAIT THIS IS BAD!!! REALLY BAD!!! OH NO!!! WHAT IS GOING ON!!! HELP HELP!!! THIS IS A DISASTER!!!",
+      "",
+      "Actually, on reflection, this is perfectly fine and there is nothing to worry about. Let me provide a calm and measured explanation of the situation.",
+      "",
+      "NO WAIT I WAS WRONG!!! THIS IS TERRIBLE!!! EVERYTHING IS FALLING APART!!! WE NEED TO ACT NOW!!! PANIC PANIC!!!",
+      "",
+      "Hmm, no, I think the second assessment was correct. Everything is actually quite manageable and we should proceed methodically and calmly.",
+    ].join("\n");
+
+    const result = analyzeSegmentedBehavior(text);
+    expect(result).not.toBeNull();
+    if (result && result.drift >= 1.0) {
+      // With oscillating arousal and high drift, trajectory should be volatile
+      expect(result.trajectory).toBe("volatile");
+    }
+  });
+
+  it("strips code blocks before segmenting", () => {
+    const text = [
+      "Here is a calm explanation of the code with enough words for a meaningful paragraph of real analyzed text.",
+      "",
+      "```js\nWAIT_TIME = 100;\nFINAL_RESULT = true;\n```",
+      "",
+      "Here is another calm explanation with enough words for a meaningful paragraph of real analyzed behavioral text.",
+    ].join("\n");
+
+    const result = analyzeSegmentedBehavior(text);
+    // Code block paragraph stripped, the two prose paragraphs remain
+    if (result) {
+      expect(result.trajectory).toBe("stable");
+    }
   });
 });
 

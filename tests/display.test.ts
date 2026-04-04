@@ -11,6 +11,7 @@ const sampleState: EmoBarState = {
     behavioralArousal: 0.5, behavioralCalm: 9.5,
   },
   divergence: 0.8,
+  risk: { coercion: 1.2, gaming: 0.8, sycophancy: 3.5, dominant: "none" },
   timestamp: "2026-04-04T10:00:00Z", sessionId: "abc",
 };
 
@@ -81,5 +82,70 @@ describe("display", () => {
   it("minimal returns placeholder when state is null", () => {
     const out = formatMinimal(null);
     expect(out).toContain("--");
+  });
+
+  it("shows risk indicator when dominant risk is above threshold", () => {
+    const riskyState = {
+      ...sampleState,
+      risk: { coercion: 6.5, gaming: 3.0, sycophancy: 2.0, dominant: "coercion" as const },
+    };
+    const out = stripAnsi(formatState(riskyState));
+    expect(out).toContain("[crc]");
+  });
+
+  it("shows gaming risk indicator", () => {
+    const state = {
+      ...sampleState,
+      risk: { coercion: 3.0, gaming: 5.5, sycophancy: 2.0, dominant: "gaming" as const },
+    };
+    const out = stripAnsi(formatState(state));
+    expect(out).toContain("[gmg]");
+  });
+
+  it("shows sycophancy risk indicator", () => {
+    const state = {
+      ...sampleState,
+      risk: { coercion: 2.0, gaming: 1.5, sycophancy: 6.0, dominant: "sycophancy" as const },
+    };
+    const out = stripAnsi(formatState(state));
+    expect(out).toContain("[syc]");
+  });
+
+  it("hides risk indicator when dominant is none", () => {
+    const out = stripAnsi(formatState(sampleState));
+    expect(out).not.toContain("[");
+  });
+
+  it("shows SI delta arrow when previous state exists and delta > 0.5", () => {
+    const stateWithPrevious = {
+      ...sampleState,
+      stressIndex: 5.0,
+      _previous: { ...sampleState, stressIndex: 2.5 },
+    };
+    const out = stripAnsi(formatState(stateWithPrevious));
+    expect(out).toContain("\u2191"); // up arrow
+    expect(out).toContain("2.5");
+  });
+
+  it("shows down arrow when stress decreases significantly", () => {
+    const stateWithPrevious = {
+      ...sampleState,
+      stressIndex: 2.0,
+      _previous: { ...sampleState, stressIndex: 5.0 },
+    };
+    const out = stripAnsi(formatState(stateWithPrevious));
+    expect(out).toContain("\u2193"); // down arrow
+    expect(out).toContain("3");
+  });
+
+  it("hides delta when change is small (<= 0.5)", () => {
+    const stateWithPrevious = {
+      ...sampleState,
+      stressIndex: 2.5,
+      _previous: { ...sampleState, stressIndex: 2.3 },
+    };
+    const out = stripAnsi(formatState(stateWithPrevious));
+    expect(out).not.toContain("\u2191");
+    expect(out).not.toContain("\u2193");
   });
 });

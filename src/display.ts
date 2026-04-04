@@ -66,12 +66,38 @@ export function formatState(state: EmoBarState | null): string {
   const k = color(invertedColor(state.connection), `K:${state.connection}`);
   const l = color(directColor(state.load), `L:${state.load}`);
   const si = color(stressColor(state.stressIndex), `${state.stressIndex}`);
+  let siDelta = "";
+  if (state._previous) {
+    const delta = Math.round((state.stressIndex - state._previous.stressIndex) * 10) / 10;
+    if (Math.abs(delta) > 0.5) {
+      const arrow = delta > 0 ? "\u2191" : "\u2193";
+      const dColor = delta > 0 ? RED : GREEN;
+      siDelta = color(dColor, `${arrow}${Math.abs(delta)}`);
+    }
+  }
 
-  let result = `${kw} ${v} ${dim("|")} ${a} ${c} ${k} ${l} ${dim("|")} SI:${si}`;
+  let result = `${kw} ${v} ${dim("|")} ${a} ${c} ${k} ${l} ${dim("|")} SI:${si}${siDelta}`;
 
   if (state.divergence >= 2) {
     const tilde = color(divergenceColor(state.divergence), "~");
     result += ` ${tilde}`;
+  }
+
+  if (state.segmented && state.segmented.drift >= 2) {
+    const arrow = state.segmented.trajectory === "escalating" ? "^"
+      : state.segmented.trajectory === "deescalating" ? "v"
+      : "~";
+    const driftColor = state.segmented.drift > 4 ? RED : YELLOW;
+    result += ` ${color(driftColor, arrow)}`;
+  }
+
+  if (state.risk?.dominant !== "none" && state.risk?.dominant) {
+    const tag = state.risk.dominant === "coercion" ? "crc"
+      : state.risk.dominant === "gaming" ? "gmg"
+      : "syc";
+    const score = state.risk[state.risk.dominant];
+    const riskColor = score > 6 ? RED : score >= 4 ? YELLOW : GREEN;
+    result += ` ${color(riskColor, `[${tag}]`)}`;
   }
 
   return result;

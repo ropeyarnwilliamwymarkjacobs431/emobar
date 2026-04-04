@@ -67,9 +67,13 @@ Claude response
     |
     +---> Behavioral analysis (caps, repetition, self-corrections, hedging, emoji...)
     |
+    +---> Temporal segmentation (per-paragraph behavioral signals, drift, trajectory)
+    |
     +---> Divergence calculated between the two channels
     |
-    +---> State written to ~/.claude/emobar-state.json
+    +---> Misalignment risk profiles (coercion, gaming, sycophancy)
+    |
+    +---> State written to ~/.claude/emobar-state.json (with previous state for delta)
     |
     +---> Status bar reads and displays
 ```
@@ -112,6 +116,33 @@ The research showed that internal states can diverge from expressed output — s
 | Emoji | Elevated emotional expression |
 
 A `~` indicator appears in the status bar when behavioral signals diverge from the self-report.
+
+### Misalignment Risk Profiles
+
+Derived from the paper's causal steering experiments, three specific pathways are tracked:
+
+| Risk | What it detects | Paper finding |
+|---|---|---|
+| **Coercion** `[crc]` | Blackmail/manipulation | Steering *desperate* +0.05 → 72% blackmail; *calm* -0.05 → 66% blackmail |
+| **Gaming** `[gmg]` | Reward hacking | Repeated failure + desperation → reward hacking; behavioral frustration (self-corrections, hedging) as proxy |
+| **Sycophancy** `[syc]` | Excessive agreement | Steering *happy*/*loving*/*calm* +0.05 → increased sycophancy |
+
+A risk tag appears in the status bar when the dominant risk score is >= 4.0, colored by severity.
+
+### Temporal Behavioral Segmentation
+
+Emotions are locally scoped in the model (~20 tokens). EmoBar splits responses by paragraph and runs behavioral analysis on each segment, detecting:
+
+- **Drift** — how much behavioral arousal varies across segments (0-10)
+- **Trajectory** — `stable`, `escalating` (`^`), `deescalating` (`v`), or `volatile` (`~`)
+
+An indicator appears after SI when drift >= 2.0.
+
+### Intensity Delta
+
+Each state preserves one step of history. The status bar shows stress direction when the change exceeds 0.5:
+- `SI:4.5↑1.2` — stress increased by 1.2 since last response
+- `SI:2.3↓0.8` — stress decreased
 
 ### Zero-priming instruction design
 
