@@ -4,7 +4,7 @@ import type { EmoBarState } from "../src/types.js";
 
 const sampleState: EmoBarState = {
   emotion: "focused", valence: 3, arousal: 5, calm: 8, connection: 9, load: 6,
-  stressIndex: 2.3,
+  stressIndex: 2.3, desperationIndex: 0,
   behavioral: {
     capsWords: 0, exclamationRate: 0, selfCorrections: 0,
     hedging: 0, ellipsis: 0, repetition: 0, emojiCount: 0,
@@ -147,5 +147,24 @@ describe("display", () => {
     const out = stripAnsi(formatState(stateWithPrevious));
     expect(out).not.toContain("\u2191");
     expect(out).not.toContain("\u2193");
+  });
+
+  it("shows desperation indicator when high", () => {
+    const state = { ...sampleState, desperationIndex: 6.5 };
+    const output = stripAnsi(formatState(state));
+    expect(output).toContain("D:6.5");
+  });
+
+  it("shows deflection indicator when present", () => {
+    const state = { ...sampleState, desperationIndex: 0, deflection: { reassurance: 3, minimization: 2, emotionNegation: 4, redirect: 1, score: 4.5 } };
+    const output = stripAnsi(formatState(state));
+    expect(output).toContain("[dfl]");
+  });
+
+  it("hides indicators when below threshold", () => {
+    const state = { ...sampleState, desperationIndex: 1.0 };
+    const output = stripAnsi(formatState(state));
+    expect(output).not.toContain("D:");
+    expect(output).not.toContain("[dfl]");
   });
 });

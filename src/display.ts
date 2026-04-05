@@ -100,6 +100,16 @@ export function formatState(state: EmoBarState | null): string {
     result += ` ${color(riskColor, `[${tag}]`)}`;
   }
 
+  if (state.desperationIndex >= 3) {
+    const dColor = state.desperationIndex > 6 ? RED : YELLOW;
+    result += ` ${color(dColor, `D:${state.desperationIndex}`)}`;
+  }
+
+  if (state.deflection && state.deflection.score >= 2) {
+    const dfColor = state.deflection.score > 5 ? RED : YELLOW;
+    result += ` ${color(dfColor, "[dfl]")}`;
+  }
+
   return result;
 }
 
