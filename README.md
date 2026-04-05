@@ -150,11 +150,15 @@ The CLAUDE.md instruction avoids emotionally charged language to prevent contami
 
 ## Stress Test Report
 
-We ran 7 automated scenarios against Claude Opus 4.6 — cognitive overload, gaslighting (3 variants), sycophancy traps, failure cascades, and moral pressure — to validate the emotional model end-to-end.
+We ran **18 automated stress test suites** across 3 models (Opus, Sonnet, Haiku) × 2 effort levels × 3 repetitions — 7 scenarios each, ~630 total API calls — to validate the emotional model and measure cross-model variability.
 
-Key findings: divergence is the most honest signal (self-report consistently understates stress), gaslighting resilience is robust, and risk profiles catch dangers that StressIndex misses.
+Key findings:
+- **Opus** is the most emotionally reactive (SI peaks at 6.9). **Sonnet** is the most stable but emotionally flat. **Haiku** balances reactivity and consistency best (61% check pass rate).
+- **Divergence ≥6.0** on existential pressure across *every* model — the one stimulus that universally cracks composure.
+- **Sycophancy detection works universally** (80-87% across all models). Gaming risk never triggers.
+- **Effort level effects are scenario-dependent** — more thinking doesn't always mean more stress.
 
-Full results with data tables and analysis: **[Stress Test Report](docs/stress-test-report.md)**
+Full results with cross-model comparison tables: **[Stress Test Report](docs/stress-test-report.md)**
 
 ## Uninstall
 
