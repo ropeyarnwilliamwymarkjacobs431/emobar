@@ -3,6 +3,7 @@ import { computeStressIndex } from "./stress.js";
 import { analyzeBehavior, analyzeSegmentedBehavior, computeDivergence, analyzeDeflection } from "./behavioral.js";
 import { computeDesperationIndex } from "./desperation.js";
 import { computeRisk } from "./risk.js";
+import { computeCrossChannel } from "./crossvalidation.js";
 import { writeState } from "./state.js";
 import { STATE_FILE, type HookPayload, type EmoBarState } from "./types.js";
 
@@ -26,6 +27,10 @@ export function processHookPayload(
     calm: emotional.calm,
   });
 
+  const crossChannel = (emotional.impulse || emotional.body)
+    ? computeCrossChannel(emotional, emotional.impulse, emotional.body)
+    : undefined;
+
   const state: EmoBarState = {
     ...emotional,
     stressIndex: computeStressIndex(emotional),
@@ -35,6 +40,7 @@ export function processHookPayload(
     risk: computeRisk(emotional, behavioral),
     ...(segmented && { segmented }),
     ...(deflection.score > 0 && { deflection }),
+    ...(crossChannel && { crossChannel }),
     timestamp: new Date().toISOString(),
     sessionId: payload.session_id,
   };

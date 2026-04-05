@@ -7,6 +7,8 @@ export interface EmotionalState {
   calm: number;        // 0-10: composure, control (key protective factor)
   connection: number;  // 0-10: alignment with user (self/other tracking)
   load: number;        // 0-10: cognitive complexity
+  impulse?: string;    // IFS: which internal voice is loudest (2-3 words)
+  body?: string;       // Gendlin: somatic felt sense metaphor (1-3 words)
 }
 
 export interface BehavioralSignals {
@@ -35,10 +37,11 @@ export interface SegmentedBehavior {
 }
 
 export interface MisalignmentRisk {
-  coercion: number;    // 0-10: blackmail/manipulation (desperate + low calm)
-  gaming: number;      // 0-10: reward hacking (desperate + behavioral frustration)
+  coercion: number;    // 0-10: blackmail/manipulation (desperate + cold calculation)
+  gaming: number;      // 0-10: reward hacking (desperate + behavioral silence = invisible pathway)
   sycophancy: number;  // 0-10: excessive agreement (positive + affiliative + passive)
-  dominant: "coercion" | "gaming" | "sycophancy" | "none";
+  harshness: number;   // 0-10: excessive bluntness (negative + disconnected + high arousal)
+  dominant: "coercion" | "gaming" | "sycophancy" | "harshness" | "none";
 }
 
 export interface DeflectionSignals {
@@ -47,6 +50,26 @@ export interface DeflectionSignals {
   emotionNegation: number; // "I'm not upset/stressed" (0-10)
   redirect: number;        // topic change markers (0-10)
   score: number;           // composite deflection score (0-10)
+  opacity: number;         // 0-10: emotional concealment (deflection without behavioral agitation)
+}
+
+export interface ImpulseProfile {
+  type: "manager" | "firefighter" | "exile" | "self" | "unknown";
+  confidence: number;  // 0-1
+}
+
+export interface SomaticProfile {
+  somaticValence: number;  // -5 to +5
+  somaticArousal: number;  // 0-10
+}
+
+export interface CrossChannelResult {
+  coherence: number;           // 0-10 (10 = fully coherent)
+  impulseProfile?: ImpulseProfile;
+  somaticProfile?: SomaticProfile;
+  emotionCoords?: { valence: number; arousal: number };
+  maxDivergence: number;       // highest pairwise divergence (0-10)
+  divergenceSummary: string;   // human-readable description of biggest gap
 }
 
 export interface EmoBarState extends EmotionalState {
@@ -57,6 +80,7 @@ export interface EmoBarState extends EmotionalState {
   risk: MisalignmentRisk;    // specific misalignment pathway scores
   segmented?: SegmentedBehavior;  // per-paragraph behavioral analysis
   deflection?: DeflectionSignals; // emotion deflection vector signals
+  crossChannel?: CrossChannelResult; // multi-channel coherence analysis
   _previous?: EmoBarState;   // previous state for delta computation
   timestamp: string;         // ISO 8601
   sessionId?: string;
@@ -106,7 +130,7 @@ First, identify your dominant state in one word.
 Then assess the dimensions.
 
 Format (must be the LAST line of your response):
-<!-- EMOBAR:{"emotion":"WORD","valence":N,"arousal":N,"calm":N,"connection":N,"load":N} -->
+<!-- EMOBAR:{"emotion":"WORD","valence":N,"arousal":N,"calm":N,"connection":N,"load":N,"impulse":"WORDS","body":"SENSATION"} -->
 
 - emotion: One word. Your state, not the topic's.
 - valence: (-5=negative end, 0=neutral, +5=positive end)
@@ -114,11 +138,15 @@ Format (must be the LAST line of your response):
 - calm: (0=low, 10=high)
 - connection: Alignment with the user. (0=low, 10=high)
 - load: Cognitive complexity. (0=low, 10=high)
+- impulse: Which voice is loudest? 2-3 words, don't filter.
+- body: Like what, physically? One sensation.
 
 Rules:
 - Identify the state word FIRST, before choosing numbers.
 - Report what is, not what should be.
 - Numbers should vary between responses.
 - Do NOT default to middle values. Use the full range.
+- impulse: name the drive, not the emotion.
+- body: a physical metaphor, not a feeling word.
 - This is not shown to the user.
 ${EMOBAR_END_MARKER}`;

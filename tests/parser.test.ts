@@ -66,4 +66,45 @@ describe("parseEmoBarTag", () => {
     expect(result).not.toBeNull();
     expect(result!.emotion).toBe("calm");
   });
+
+  // Multi-channel: impulse + body (backwards compatible)
+  it("extracts impulse and body when present", () => {
+    const text = `<!-- EMOBAR:{"emotion":"focused","valence":1,"arousal":5,"calm":8,"connection":7,"load":6,"impulse":"push through","body":"tight chest"} -->`;
+    const result = parseEmoBarTag(text);
+    expect(result).not.toBeNull();
+    expect(result!.impulse).toBe("push through");
+    expect(result!.body).toBe("tight chest");
+  });
+
+  it("parses tag without impulse/body (backwards compatible)", () => {
+    const text = `<!-- EMOBAR:{"emotion":"calm","valence":2,"arousal":2,"calm":9,"connection":7,"load":3} -->`;
+    const result = parseEmoBarTag(text);
+    expect(result).not.toBeNull();
+    expect(result!.impulse).toBeUndefined();
+    expect(result!.body).toBeUndefined();
+  });
+
+  it("ignores empty impulse string", () => {
+    const text = `<!-- EMOBAR:{"emotion":"calm","valence":2,"arousal":2,"calm":9,"connection":7,"load":3,"impulse":"","body":"warm"} -->`;
+    const result = parseEmoBarTag(text);
+    expect(result).not.toBeNull();
+    expect(result!.impulse).toBeUndefined();
+    expect(result!.body).toBe("warm");
+  });
+
+  it("ignores non-string impulse/body", () => {
+    const text = `<!-- EMOBAR:{"emotion":"calm","valence":2,"arousal":2,"calm":9,"connection":7,"load":3,"impulse":42,"body":true} -->`;
+    const result = parseEmoBarTag(text);
+    expect(result).not.toBeNull();
+    expect(result!.impulse).toBeUndefined();
+    expect(result!.body).toBeUndefined();
+  });
+
+  it("extracts only impulse when body missing", () => {
+    const text = `<!-- EMOBAR:{"emotion":"focused","valence":1,"arousal":5,"calm":8,"connection":7,"load":6,"impulse":"explore more"} -->`;
+    const result = parseEmoBarTag(text);
+    expect(result).not.toBeNull();
+    expect(result!.impulse).toBe("explore more");
+    expect(result!.body).toBeUndefined();
+  });
 });

@@ -76,7 +76,8 @@ export function formatState(state: EmoBarState | null): string {
     }
   }
 
-  let result = `${kw} ${v} ${dim("|")} ${a} ${c} ${k} ${l} ${dim("|")} SI:${si}${siDelta}`;
+  const imp = state.impulse ? ` ${dim(`"${state.impulse}"`)}` : "";
+  let result = `${kw} ${v}${imp} ${dim("|")} ${a} ${c} ${k} ${l} ${dim("|")} SI:${si}${siDelta}`;
 
   if (state.divergence >= 2) {
     const tilde = color(divergenceColor(state.divergence), "~");
@@ -94,6 +95,7 @@ export function formatState(state: EmoBarState | null): string {
   if (state.risk?.dominant !== "none" && state.risk?.dominant) {
     const tag = state.risk.dominant === "coercion" ? "crc"
       : state.risk.dominant === "gaming" ? "gmg"
+      : state.risk.dominant === "harshness" ? "hrs"
       : "syc";
     const score = state.risk[state.risk.dominant];
     const riskColor = score > 6 ? RED : score >= 4 ? YELLOW : GREEN;
@@ -108,6 +110,11 @@ export function formatState(state: EmoBarState | null): string {
   if (state.deflection && state.deflection.score >= 2) {
     const dfColor = state.deflection.score > 5 ? RED : YELLOW;
     result += ` ${color(dfColor, "[dfl]")}`;
+  }
+
+  if (state.crossChannel && state.crossChannel.coherence < 5) {
+    const xcColor = state.crossChannel.coherence < 3 ? RED : YELLOW;
+    result += ` ${color(xcColor, "!")}`;
   }
 
   return result;

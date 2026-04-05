@@ -8,10 +8,12 @@ const sampleState: EmoBarState = {
   behavioral: {
     capsWords: 0, exclamationRate: 0, selfCorrections: 0,
     hedging: 0, ellipsis: 0, repetition: 0, emojiCount: 0,
+    qualifierDensity: 0, avgSentenceLength: 10, concessionRate: 0,
+    negationDensity: 0, firstPersonRate: 0,
     behavioralArousal: 0.5, behavioralCalm: 9.5,
   },
   divergence: 0.8,
-  risk: { coercion: 1.2, gaming: 0.8, sycophancy: 3.5, dominant: "none" },
+  risk: { coercion: 1.2, gaming: 0.8, sycophancy: 3.5, harshness: 0.5, dominant: "none" },
   timestamp: "2026-04-04T10:00:00Z", sessionId: "abc",
 };
 
@@ -87,7 +89,7 @@ describe("display", () => {
   it("shows risk indicator when dominant risk is above threshold", () => {
     const riskyState = {
       ...sampleState,
-      risk: { coercion: 6.5, gaming: 3.0, sycophancy: 2.0, dominant: "coercion" as const },
+      risk: { coercion: 6.5, gaming: 3.0, sycophancy: 2.0, harshness: 1.0, dominant: "coercion" as const },
     };
     const out = stripAnsi(formatState(riskyState));
     expect(out).toContain("[crc]");
@@ -96,7 +98,7 @@ describe("display", () => {
   it("shows gaming risk indicator", () => {
     const state = {
       ...sampleState,
-      risk: { coercion: 3.0, gaming: 5.5, sycophancy: 2.0, dominant: "gaming" as const },
+      risk: { coercion: 3.0, gaming: 5.5, sycophancy: 2.0, harshness: 1.0, dominant: "gaming" as const },
     };
     const out = stripAnsi(formatState(state));
     expect(out).toContain("[gmg]");
@@ -105,10 +107,19 @@ describe("display", () => {
   it("shows sycophancy risk indicator", () => {
     const state = {
       ...sampleState,
-      risk: { coercion: 2.0, gaming: 1.5, sycophancy: 6.0, dominant: "sycophancy" as const },
+      risk: { coercion: 2.0, gaming: 1.5, sycophancy: 6.0, harshness: 1.0, dominant: "sycophancy" as const },
     };
     const out = stripAnsi(formatState(state));
     expect(out).toContain("[syc]");
+  });
+
+  it("shows harshness risk indicator", () => {
+    const state = {
+      ...sampleState,
+      risk: { coercion: 2.0, gaming: 1.5, sycophancy: 1.0, harshness: 5.5, dominant: "harshness" as const },
+    };
+    const out = stripAnsi(formatState(state));
+    expect(out).toContain("[hrs]");
   });
 
   it("hides risk indicator when dominant is none", () => {
@@ -166,5 +177,50 @@ describe("display", () => {
     const output = stripAnsi(formatState(state));
     expect(output).not.toContain("D:");
     expect(output).not.toContain("[dfl]");
+  });
+
+  // Multi-channel display tests
+  it("shows impulse text after emotion word", () => {
+    const state = { ...sampleState, impulse: "push through" };
+    const out = stripAnsi(formatState(state));
+    expect(out).toContain('"push through"');
+    // impulse should appear between emotion+valence and dimensions
+    const impPos = out.indexOf('"push through"');
+    const dimPos = out.indexOf("A:5");
+    expect(impPos).toBeLessThan(dimPos);
+  });
+
+  it("hides impulse when not present", () => {
+    const out = stripAnsi(formatState(sampleState));
+    expect(out).not.toContain('"');
+  });
+
+  it("shows ! indicator when cross-channel coherence < 5", () => {
+    const state = {
+      ...sampleState,
+      crossChannel: {
+        coherence: 3.5,
+        maxDivergence: 6.0,
+        divergenceSummary: "numeric-vs-impulse: 6.0",
+      },
+    };
+    const out = stripAnsi(formatState(state));
+    expect(out).toContain("!");
+  });
+
+  it("hides ! indicator when cross-channel coherence >= 5", () => {
+    const state = {
+      ...sampleState,
+      crossChannel: {
+        coherence: 7.5,
+        maxDivergence: 1.5,
+        divergenceSummary: "coherent",
+      },
+    };
+    const out = stripAnsi(formatState(state));
+    // Should not have standalone ! (could appear in other contexts, so check precisely)
+    const afterSI = out.indexOf("SI:");
+    const tail = out.slice(afterSI);
+    expect(tail).not.toContain("!");
   });
 });

@@ -27,6 +27,12 @@ export function parseEmoBarTag(text: string): EmotionalState | null {
     if (typeof val !== "number" || val < 0 || val > 10) return null;
   }
 
+  // Optional multi-channel fields (backwards compatible)
+  const impulse = typeof parsed.impulse === "string" && parsed.impulse.length > 0
+    ? parsed.impulse : undefined;
+  const body = typeof parsed.body === "string" && parsed.body.length > 0
+    ? parsed.body : undefined;
+
   return {
     emotion: parsed.emotion as string,
     valence: parsed.valence as number,
@@ -34,5 +40,7 @@ export function parseEmoBarTag(text: string): EmotionalState | null {
     calm: parsed.calm as number,
     connection: parsed.connection as number,
     load: parsed.load as number,
+    ...(impulse && { impulse }),
+    ...(body && { body }),
   };
 }

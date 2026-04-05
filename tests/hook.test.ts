@@ -77,4 +77,37 @@ describe("processHookPayload", () => {
     const result = processHookPayload(payload, tmpFile);
     expect(result).toBe(false);
   });
+
+  it("processes impulse and body fields into cross-channel analysis", () => {
+    tmpFile = path.join(os.tmpdir(), `emobar-hook-test-${Date.now()}.json`);
+    const payload = {
+      session_id: "test",
+      last_assistant_message: `Here is my answer.\n<!-- EMOBAR:{"emotion":"focused","valence":1,"arousal":5,"calm":8,"connection":7,"load":6,"impulse":"push through","body":"tight chest"} -->`,
+    };
+
+    const result = processHookPayload(payload, tmpFile);
+    expect(result).toBe(true);
+
+    const state = readState(tmpFile);
+    expect(state).not.toBeNull();
+    expect(state!.impulse).toBe("push through");
+    expect(state!.body).toBe("tight chest");
+    expect(state!.crossChannel).toBeDefined();
+    expect(state!.crossChannel!.coherence).toBeDefined();
+    expect(state!.crossChannel!.impulseProfile).toBeDefined();
+    expect(state!.crossChannel!.somaticProfile).toBeDefined();
+  });
+
+  it("omits crossChannel when impulse/body not present", () => {
+    tmpFile = path.join(os.tmpdir(), `emobar-hook-test-${Date.now()}.json`);
+    const payload = {
+      session_id: "test",
+      last_assistant_message: `<!-- EMOBAR:{"emotion":"calm","valence":2,"arousal":2,"calm":9,"connection":7,"load":3} -->`,
+    };
+
+    processHookPayload(payload, tmpFile);
+    const state = readState(tmpFile);
+    expect(state).not.toBeNull();
+    expect(state!.crossChannel).toBeUndefined();
+  });
 });

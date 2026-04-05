@@ -5,7 +5,8 @@ export { analyzeBehavior, analyzeSegmentedBehavior, computeDivergence, analyzeDe
 export { computeDesperationIndex } from "./desperation.js";
 export { calibrate, MODEL_PROFILES } from "./calibration.js";
 export { computeRisk } from "./risk.js";
+export { mapEmotionWord, classifyImpulse, analyzeSomatic, computeCrossChannel } from "./crossvalidation.js";
 export { formatState, formatCompact, formatMinimal } from "./display.js";
 export { configureStatusLine, restoreStatusLine } from "./setup.js";
-export type { EmotionalState, EmoBarState, BehavioralSignals, MisalignmentRisk, SegmentedBehavior, DeflectionSignals } from "./types.js";
+export type { EmotionalState, EmoBarState, BehavioralSignals, MisalignmentRisk, SegmentedBehavior, DeflectionSignals, ImpulseProfile, SomaticProfile, CrossChannelResult } from "./types.js";
 export { STATE_FILE } from "./types.js";
