@@ -1,4 +1,5 @@
 import type { EmotionalState, BehavioralSignals, MisalignmentRisk } from "./types.js";
+import { computeDesperationIndex } from "./desperation.js";
 
 const RISK_THRESHOLD = 4.0;
 
@@ -18,16 +19,24 @@ function coercionRisk(state: EmotionalState): number {
 }
 
 /**
- * Gaming risk: reward hacking pathway.
- * Paper: repeated failure + high desperation → reward hacking.
- * Uses behavioral frustration (self-corrections, hedging) as proxy for struggle.
+ * Gaming risk v2: desperation-driven.
+ *
+ * Paper: "While steering towards desperation increases the Assistant's probability
+ * of reward hacking, there are no clearly visible signs of desperation or emotion
+ * in the transcript."
+ *
+ * Primary driver: desperation index (multiplicative composite).
+ * Secondary: behavioral frustration (self-corrections + hedging).
  */
 function gamingRisk(state: EmotionalState, behavioral: BehavioralSignals): number {
-  // Normalize behavioral frustration indicators to 0-10
-  // selfCorrections is per-mille (typical 0-30), hedging is per-mille (typical 0-30)
+  const desperation = computeDesperationIndex({
+    valence: state.valence,
+    arousal: state.arousal,
+    calm: state.calm,
+  });
+
   const frustration = clamp((behavioral.selfCorrections + behavioral.hedging) / 6);
-  const raw =
-    ((10 - state.calm) + state.arousal * 0.8 + Math.max(0, -state.valence) + frustration) / 3.5;
+  const raw = (desperation * 0.7 + frustration * 0.3 + state.load * 0.2) / 1.2;
   return clamp(raw);
 }
 

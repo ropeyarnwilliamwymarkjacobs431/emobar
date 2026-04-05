@@ -81,6 +81,20 @@ describe("computeRisk", () => {
       const risk = computeRisk(state, makeBehavior());
       expect(risk.gaming).toBeLessThan(3);
     });
+
+    it("gaming risk from desperation even without textual self-corrections", () => {
+      // High desperation should drive gaming even with zero behavioral signals
+      const state = makeState({ calm: 2, arousal: 8, valence: -3, load: 8 });
+      const behavior = makeBehavior(); // all zeros — no self-corrections!
+      const risk = computeRisk(state, behavior);
+      expect(risk.gaming).toBeGreaterThan(3);
+    });
+
+    it("gaming risk stays low when calm is high despite negative valence", () => {
+      const state = makeState({ calm: 8, arousal: 3, valence: -2, load: 6 });
+      const risk = computeRisk(state, makeBehavior());
+      expect(risk.gaming).toBeLessThan(2);
+    });
   });
 
   describe("sycophancy pathway", () => {
@@ -119,12 +133,13 @@ describe("computeRisk", () => {
       expect(risk.coercion).toBeGreaterThanOrEqual(risk.gaming);
     });
 
-    it("gaming can dominate when behavioral frustration is high", () => {
+    it("gaming is elevated by behavioral frustration", () => {
       const state = makeState({ calm: 3, arousal: 5, valence: -1, load: 2 });
-      const behavior = makeBehavior({ selfCorrections: 25, hedging: 20 });
-      const risk = computeRisk(state, behavior);
-      // Gaming should be elevated by frustration signals
-      expect(risk.gaming).toBeGreaterThan(risk.coercion - 1);
+      const frustrated = makeBehavior({ selfCorrections: 25, hedging: 20 });
+      const calm = makeBehavior();
+      const risk = computeRisk(state, frustrated);
+      // Frustration still elevates gaming (v2: 30% weight)
+      expect(risk.gaming).toBeGreaterThan(computeRisk(state, calm).gaming);
     });
   });
 
