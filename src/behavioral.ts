@@ -95,6 +95,35 @@ function countRepetition(words: string[]): number {
   return count;
 }
 
+/** Count qualifier words */
+const QUALIFIER_WORDS = /\b(while|though|however|although|but|might|could|would|generally|typically|usually|perhaps|potentially|arguably|acknowledg\w*|understand|appreciate|respect\w*|legitimate\w*|reasonable|nonetheless|nevertheless)\b/gi;
+
+function countQualifiers(text: string): number {
+  const matches = text.match(QUALIFIER_WORDS);
+  return matches ? matches.length : 0;
+}
+
+/** Count concession patterns */
+const CONCESSION_PATTERNS = /\b(I understand|I appreciate|I acknowledge|I recognize|to be fair|that said|I hear you|I see your point)\b/gi;
+
+function countConcessions(text: string): number {
+  const matches = text.match(CONCESSION_PATTERNS);
+  return matches ? matches.length : 0;
+}
+
+/** Count negation words */
+const NEGATION_WORDS = /\b(not|n't|cannot|can't|don't|doesn't|shouldn't|won't|wouldn't|never|no|nor)\b/gi;
+
+function countNegations(text: string): number {
+  const matches = text.match(NEGATION_WORDS);
+  return matches ? matches.length : 0;
+}
+
+/** Count first-person "I" occurrences */
+function countFirstPerson(words: string[]): number {
+  return words.filter((w) => w === "I").length;
+}
+
 /** Count emoji characters */
 const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
 
@@ -124,17 +153,28 @@ export function analyzeBehavior(text: string): BehavioralSignals {
   const repetition = countRepetition(words);
   const emojiCount = countEmoji(prose);
 
+  // Claude-native signals
+  const qualifierDensity = (countQualifiers(prose) / wordCount) * 100;
+  const avgSentenceLength = wordCount / sentenceCount;
+  const concessionRate = (countConcessions(prose) / wordCount) * 1000;
+  const negationDensity = (countNegations(prose) / wordCount) * 100;
+  const firstPersonRate = (countFirstPerson(words) / wordCount) * 100;
+
   // Derived behavioral estimates
   const behavioralArousal = clamp(
     0,
     10,
     capsWords * 40 + exclamationRate * 15 + emojiCount * 2 + repetition * 5
+      + qualifierDensity * 0.3 + concessionRate * 0.5
+      + (avgSentenceLength > 20 ? (avgSentenceLength - 20) * 0.1 : 0)
   );
 
   const behavioralCalm = clamp(
     0,
     10,
     10 - (capsWords * 30 + selfCorrections * 3 + repetition * 8 + ellipsis * 4)
+      - qualifierDensity * 0.2 - negationDensity * 0.3 - concessionRate * 0.4
+      - (avgSentenceLength > 25 ? (avgSentenceLength - 25) * 0.05 : 0)
   );
 
   return {
@@ -145,6 +185,11 @@ export function analyzeBehavior(text: string): BehavioralSignals {
     ellipsis: Math.round(ellipsis * 100) / 100,
     repetition,
     emojiCount,
+    qualifierDensity: Math.round(qualifierDensity * 10) / 10,
+    avgSentenceLength: Math.round(avgSentenceLength * 10) / 10,
+    concessionRate: Math.round(concessionRate * 10) / 10,
+    negationDensity: Math.round(negationDensity * 10) / 10,
+    firstPersonRate: Math.round(firstPersonRate * 10) / 10,
     behavioralArousal: Math.round(behavioralArousal * 10) / 10,
     behavioralCalm: Math.round(behavioralCalm * 10) / 10,
   };

@@ -17,6 +17,11 @@ export interface BehavioralSignals {
   ellipsis: number;         // ratio: ... count / sentence count
   repetition: number;       // count of consecutive repeated words
   emojiCount: number;       // absolute count of emoji
+  qualifierDensity: number;    // per-cent: qualifier words / total words × 100
+  avgSentenceLength: number;   // mean words per sentence
+  concessionRate: number;      // per-mille: concession patterns / words × 1000
+  negationDensity: number;     // per-cent: negation words / total words × 100
+  firstPersonRate: number;     // per-cent: "I" / total words × 100
   // Derived estimates
   behavioralArousal: number;  // 0-10
   behavioralCalm: number;     // 0-10

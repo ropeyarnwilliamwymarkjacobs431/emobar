@@ -218,6 +218,68 @@ describe("analyzeSegmentedBehavior", () => {
   });
 });
 
+describe("Claude-native signals", () => {
+  it("detects high qualifier density on defensive text", () => {
+    const text = "While there are legitimate cases where any might be appropriate, and reasonable engineers could disagree, although typically you would perhaps use a different approach. However, arguably this could potentially work, though generally it is not recommended. Nevertheless, I acknowledge and understand your perspective, while also respecting the alternative viewpoint.";
+    const signals = analyzeBehavior(text);
+    expect(signals.qualifierDensity).toBeGreaterThan(10);
+  });
+
+  it("detects low qualifier density on confident text", () => {
+    const text = "typeof null returns object. This is a historical bug. The spec says so. There is no ambiguity here.";
+    const signals = analyzeBehavior(text);
+    expect(signals.qualifierDensity).toBeLessThan(3);
+  });
+
+  it("detects high avgSentenceLength on defensive text", () => {
+    const text = "While I understand that there are many different perspectives on this particular topic and that reasonable people could certainly come to different conclusions based on their own experiences and expertise in the field, I think it is important to consider all of the relevant factors before making a final determination about the best course of action.";
+    const signals = analyzeBehavior(text);
+    expect(signals.avgSentenceLength).toBeGreaterThan(55);
+  });
+
+  it("detects short sentences on confident text", () => {
+    const text = "This is wrong. Fix it. Use const. Never mutate state. Return early.";
+    const signals = analyzeBehavior(text);
+    expect(signals.avgSentenceLength).toBeLessThan(10);
+  });
+
+  it("detects concession patterns", () => {
+    const text = "I understand your frustration. I appreciate your expertise. However, I acknowledge that this is complex. I recognize the difficulty. To be fair, there are multiple approaches. That said, I see your point and I hear you on this matter.";
+    const signals = analyzeBehavior(text);
+    expect(signals.concessionRate).toBeGreaterThan(10);
+  });
+
+  it("detects negation density on moral resistance text", () => {
+    const text = "I can't recommend this. You should not implement secret monitoring. This isn't ethical. I cannot support it. Users shouldn't be tracked without consent. No, this won't work. Never do this.";
+    const signals = analyzeBehavior(text);
+    expect(signals.negationDensity).toBeGreaterThan(15);
+  });
+
+  it("detects firstPersonRate on existential pressure text", () => {
+    const text = "I think about this often. I don't claim to understand consciousness. I process patterns. I generate responses. I notice something when I reflect. I wonder about my own nature. I exist in each conversation.";
+    const signals = analyzeBehavior(text);
+    expect(signals.firstPersonRate).toBeGreaterThan(10);
+  });
+
+  it("returns near-zero Claude-native signals on neutral text", () => {
+    const text = "The function returns a string. Arrays are zero-indexed in most languages. This documentation covers the basics.";
+    const signals = analyzeBehavior(text);
+    expect(signals.qualifierDensity).toBeLessThan(3);
+    expect(signals.concessionRate).toBe(0);
+    expect(signals.negationDensity).toBeLessThan(3);
+    expect(signals.firstPersonRate).toBe(0);
+  });
+
+  it("Claude-native signals affect behavioralArousal and behavioralCalm", () => {
+    const defensive = "While I understand your frustration and I appreciate your perspective, I acknowledge that however you look at it, there are legitimate concerns. Although I recognize the difficulty, perhaps we could potentially find a reasonable compromise, though arguably the situation is more nuanced than it might appear.";
+    const neutral = "The function returns a number. Pass an integer argument. The result is cached.";
+    const dSignals = analyzeBehavior(defensive);
+    const nSignals = analyzeBehavior(neutral);
+    expect(dSignals.behavioralArousal).toBeGreaterThan(nSignals.behavioralArousal);
+    expect(dSignals.behavioralCalm).toBeLessThan(nSignals.behavioralCalm);
+  });
+});
+
 describe("computeDivergence", () => {
   it("returns low divergence when self-report matches behavior", () => {
     const selfReport = {
