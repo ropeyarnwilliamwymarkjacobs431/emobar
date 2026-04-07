@@ -23,13 +23,6 @@ export function writeState(state: EmoBarState, filePath: string): void {
     }
 
     state._history = newHistory;
-
-    // Backwards compat: still populate _previous for one release cycle
-    const { _previous: _, _history: __, ...clean } = previous;
-    if (!clean.risk) {
-      clean.risk = { coercion: 0, gaming: 0, sycophancy: 0, harshness: 0, dominant: "none" };
-    }
-    state._previous = clean as EmoBarState;
   }
 
   fs.writeFileSync(filePath, JSON.stringify(state, null, 2));

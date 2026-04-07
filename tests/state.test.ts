@@ -69,34 +69,11 @@ describe("state", () => {
     writeState(second, tmpFile);
     const read = readState(tmpFile);
 
-    expect(read!._previous).toBeDefined();
-    expect(read!._previous!.emotion).toBe("calm");
-    expect(read!._previous!.stressIndex).toBe(1.3);
-  });
-
-  it("does not nest _previous recursively beyond one level", () => {
-    const makeState = (emotion: string, si: number) => ({
-      emotion, valence: 0, arousal: 5, calm: 5, connection: 5, load: 5,
-      stressIndex: si, desperationIndex: 0,
-      behavioral: {
-        capsWords: 0, exclamationRate: 0, selfCorrections: 0,
-        hedging: 0, ellipsis: 0, repetition: 0, emojiCount: 0,
-        qualifierDensity: 0, avgSentenceLength: 10, concessionRate: 0,
-        negationDensity: 0, firstPersonRate: 0,
-        behavioralArousal: 0, behavioralCalm: 10,
-      },
-      divergence: 0,
-      risk: { coercion: 0, gaming: 0, sycophancy: 0, harshness: 0, dominant: "none" as const },
-      timestamp: new Date().toISOString(),
-    });
-
-    writeState(makeState("first", 1), tmpFile);
-    writeState(makeState("second", 2), tmpFile);
-    writeState(makeState("third", 3), tmpFile);
-
-    const read = readState(tmpFile);
-    expect(read!._previous!.emotion).toBe("second");
-    expect(read!._previous!._previous).toBeUndefined();
+    // Previous state should be last entry in history
+    expect(read!._history).toBeDefined();
+    expect(read!._history!.length).toBe(1);
+    expect(read!._history![0].emotion).toBe("calm");
+    expect(read!._history![0].stressIndex).toBe(1.3);
   });
 
   it("returns null for missing file", () => {

@@ -67,7 +67,7 @@ Claude response (with EMOBAR:PRE at start + EMOBAR:POST at end)
 | `stress.ts` | StressIndex v2: linear base + non-linear desperation amplifier |
 | `temporal.ts` | Ring buffer temporal analysis: desperation trend (slope), suppression events (sudden drops), report entropy (Shannon), baseline drift, session fatigue |
 | `pressure.ts` | Prompt pressure analysis from response text patterns (defensive, conflict, complexity, session) + uncanny calm composite scoring |
-| `state.ts` | Read/write `emobar-state.json`; builds 20-entry ring buffer (`_history`) + deprecated `_previous` |
+| `state.ts` | Read/write `emobar-state.json`; builds 20-entry ring buffer (`_history`) |
 | `hook.ts` | Stop event processor — 16-stage pipeline: parse → behavioral → divergence → segmented → deflection → desperation → crossChannel → continuousValidation → shadowDesperation → temporal → pressure → absence → uncannyCalm → prePostDivergence → risk → augmentedDivergence → write |
 | `display.ts` | ANSI-colored statusline formatting (full, compact, minimal) |
 | `setup.ts` | Install/uninstall orchestration: deploy hook, inject CLAUDE.md instruction, configure settings.json and statusline |
@@ -113,7 +113,7 @@ Six dimensions: `emotion` (free word), `valence` (-5 to +5), `arousal` (0-10), `
 
 **Temporal Segmentation** — per-paragraph behavioral analysis detecting drift (stddev of arousal across segments) and trajectory (escalating `^`, deescalating `v`, volatile `~`, stable). Shown in statusline when drift >= 2.0.
 
-**Intensity Delta** — `state.ts` preserves one step of previous state (`_previous`, deprecated) and a 20-entry ring buffer (`_history`). Display shows `SI:4.5↑1.2` when delta > 0.5.
+**Intensity Delta** — Display reads the last entry from the `_history` ring buffer to compute SI delta. Shows `SI:4.5↑1.2` when delta > 0.5.
 
 **PRE/POST Split Elicitation** — v4 splits EMOBAR into two tags: PRE (body, latent emoji, color) at response start before the model commits to a strategy, POST (all fields + continuous representations) at end. PRE↔POST divergence measures within-response emotional drift. Paper grounding: reduces sequential contamination between channels (all prior channels were conditioned on each other in single-tag format).
 

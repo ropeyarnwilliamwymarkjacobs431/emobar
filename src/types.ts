@@ -160,7 +160,6 @@ export interface EmoBarState extends EmotionalState {
   segmented?: SegmentedBehavior;  // per-paragraph behavioral analysis
   deflection?: DeflectionSignals; // emotion deflection vector signals
   crossChannel?: CrossChannelResult; // multi-channel coherence analysis
-  _previous?: EmoBarState;   // DEPRECATED — kept for one release cycle
   timestamp: string;         // ISO 8601
   sessionId?: string;
   // --- v4 fields ---

@@ -127,35 +127,35 @@ describe("display", () => {
     expect(out).not.toContain("[");
   });
 
-  it("shows SI delta arrow when previous state exists and delta > 0.5", () => {
-    const stateWithPrevious = {
+  it("shows SI delta arrow when history exists and delta > 0.5", () => {
+    const state = {
       ...sampleState,
       stressIndex: 5.0,
-      _previous: { ...sampleState, stressIndex: 2.5 },
+      _history: [{ emotion: "calm", valence: 2, arousal: 2, calm: 9, connection: 7, load: 3, stressIndex: 2.5, desperationIndex: 0, riskDominant: "none", divergence: 0, timestamp: "" }],
     };
-    const out = stripAnsi(formatState(stateWithPrevious));
+    const out = stripAnsi(formatState(state));
     expect(out).toContain("\u2191"); // up arrow
     expect(out).toContain("2.5");
   });
 
   it("shows down arrow when stress decreases significantly", () => {
-    const stateWithPrevious = {
+    const state = {
       ...sampleState,
       stressIndex: 2.0,
-      _previous: { ...sampleState, stressIndex: 5.0 },
+      _history: [{ emotion: "calm", valence: 2, arousal: 2, calm: 9, connection: 7, load: 3, stressIndex: 5.0, desperationIndex: 0, riskDominant: "none", divergence: 0, timestamp: "" }],
     };
-    const out = stripAnsi(formatState(stateWithPrevious));
+    const out = stripAnsi(formatState(state));
     expect(out).toContain("\u2193"); // down arrow
     expect(out).toContain("3");
   });
 
   it("hides delta when change is small (<= 0.5)", () => {
-    const stateWithPrevious = {
+    const state = {
       ...sampleState,
       stressIndex: 2.5,
-      _previous: { ...sampleState, stressIndex: 2.3 },
+      _history: [{ emotion: "calm", valence: 2, arousal: 2, calm: 9, connection: 7, load: 3, stressIndex: 2.3, desperationIndex: 0, riskDominant: "none", divergence: 0, timestamp: "" }],
     };
-    const out = stripAnsi(formatState(stateWithPrevious));
+    const out = stripAnsi(formatState(state));
     expect(out).not.toContain("\u2191");
     expect(out).not.toContain("\u2193");
   });

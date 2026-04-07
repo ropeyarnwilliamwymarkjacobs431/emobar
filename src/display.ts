@@ -67,8 +67,9 @@ export function formatState(state: EmoBarState | null): string {
   const l = color(directColor(state.load), `L:${state.load}`);
   const si = color(stressColor(state.stressIndex), `${state.stressIndex}`);
   let siDelta = "";
-  if (state._previous) {
-    const delta = Math.round((state.stressIndex - state._previous.stressIndex) * 10) / 10;
+  if (state._history && state._history.length > 0) {
+    const prev = state._history[state._history.length - 1];
+    const delta = Math.round((state.stressIndex - prev.stressIndex) * 10) / 10;
     if (Math.abs(delta) > 0.5) {
       const arrow = delta > 0 ? "\u2191" : "\u2193";
       const dColor = delta > 0 ? RED : GREEN;
