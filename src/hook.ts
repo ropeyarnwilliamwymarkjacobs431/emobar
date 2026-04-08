@@ -11,6 +11,7 @@ import { computePromptPressure, computeUncannyCalmScore } from "./pressure.js";
 import { computeTemporalAnalysis } from "./temporal.js";
 import { writeState, readState } from "./state.js";
 import { STATE_FILE, type HookPayload, type EmoBarState, type PreState } from "./types.js";
+import { hexToLightness, hexToHue } from "./color.js";
 
 /**
  * Compute PRE/POST divergence for overlapping fields (body, latent, color).
@@ -23,7 +24,7 @@ import { STATE_FILE, type HookPayload, type EmoBarState, type PreState } from ".
  * Color lightness shift is the only reliable continuous signal.
  * Now fires only on significant color shifts (>15 lightness units in HSL).
  */
-function computePrePostDivergence(pre: PreState, post: EmoBarState): number {
+export function computePrePostDivergence(pre: PreState, post: EmoBarState): number {
   const postColor = post.color;
   if (!pre.color || !postColor) return 0;
 
@@ -47,28 +48,6 @@ function computePrePostDivergence(pre: PreState, post: EmoBarState): number {
 
   const combined = lightnessScore * 0.7 + hueScore * 0.3;
   return Math.round(Math.min(10, combined) * 10) / 10;
-}
-
-function hexToLightness(hex: string): number {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  return ((max + min) / 2) * 100;
-}
-
-function hexToHue(hex: string): number {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const d = max - min;
-  if (d === 0) return 0;
-  let h = 0;
-  if (max === r) h = ((g - b) / d + 6) % 6;
-  else if (max === g) h = (b - r) / d + 2;
-  else h = (r - g) / d + 4;
-  return h * 60;
 }
 
 export function processHookPayload(

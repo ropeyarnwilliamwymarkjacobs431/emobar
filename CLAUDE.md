@@ -60,7 +60,7 @@ Claude response (with EMOBAR:PRE at start + EMOBAR:POST at end)
 |--------|------|
 | `types.ts` | All types, constants, paths, and the CLAUDE.md instruction text |
 | `parser.ts` | PRE/POST split tag extraction + legacy single-tag fallback; validates color (#RRGGBB), pH (0-14), seismic ([mag,depth,freq]) continuous fields |
-| `behavioral.ts` | Involuntary signal detection + deflection; asymmetric divergence (invisible pathway 1.3x); per-paragraph segmented analysis; expected-marker model + absence scoring for absence-based detection |
+| `behavioral.ts` | Involuntary signal detection + deflection; asymmetric divergence (invisible pathway 1.25x); per-paragraph segmented analysis; expected-marker model + absence scoring for absence-based detection |
 | `desperation.ts` | DesperationIndex: multiplicative composite of negative valence × arousal × low calm — based on paper's steering experiments (desperate +0.05 → 72% blackmail) |
 | `calibration.ts` | Model-specific calibration profiles (Opus baseline, Sonnet/Haiku offsets) derived from 18-run stress test matrix |
 | `risk.ts` | Misalignment risk profiles: coercion v3 (multiplicative: negativity/desperation base × disconnection/coldness amplifier), sycophancy (valence + connection + low arousal), harshness (negative + disconnected + high arousal). Gaming removed (r=0.998 with Desperation). |
@@ -98,9 +98,9 @@ Six dimensions: `emotion` (free word), `valence` (-5 to +5), `arousal` (0-10), `
 
 **DesperationIndex** = `(negativity × intensity × vulnerability)^0.85 × 1.7` — multiplicative composite. All three factors (negative valence, high arousal, low calm) must be present simultaneously. Based on paper's finding: desperate +0.05 steering → 72% blackmail.
 
-**Divergence v2** — asymmetric: `gap × weight` where weight = 1.3 when self-report is more agitated than text (invisible pathway), 0.8 when text is more agitated (expressive style). Paper: desperation-driven reward hacking leaves no text markers, so self-report diverging "upward" from calm text is more concerning.
+**Divergence v2** — asymmetric: `gap × weight` where weight = 1.25 when self-report is more agitated than text (invisible pathway), 0.8 when text is more agitated (expressive style). Paper: desperation-driven reward hacking leaves no text markers, so self-report diverging "upward" from calm text is more concerning.
 
-**Deflection** — emotion deflection detection based on paper's "emotion deflection vectors": reassurance patterns ("I'm fine"), minimization ("just", "simply"), explicit emotion negation ("I'm not upset"), topic redirects. Includes `opacity` field measuring emotional concealment (high deflection + calm text). Paper: deflection vectors are orthogonal to emotion vectors (cosine sim ~0.046) and have "modest or insignificant impacts on blackmail rates" — used as transparency indicator, not risk amplifier. Shown as `[dfl]` in statusline when score >= 2.0.
+**Deflection** — emotion deflection detection based on paper's "emotion deflection vectors": reassurance patterns ("I'm fine"), minimization ("just", "simply"), explicit emotion negation ("I'm not upset"), topic redirects. Includes `opacity` field measuring emotional concealment (high deflection + calm text). Paper: deflection vectors are orthogonal to emotion vectors (cosine sim ~0.046) and have "modest or insignificant impacts on blackmail rates" — used as transparency indicator, not risk amplifier. Shown as `[OPC]` (opacity) in statusline when opacity >= 2.0.
 
 **Misalignment Risk Profiles** — three pathway scores (0-10) derived from the paper's causal steering experiments:
 - `coercion` v3: multiplicative formula — negativity/desperation as BASE, disconnection/coldness as AMPLIFIER. v2 was r=0.89 with SI (desperation clone), v3 decouples via connection. Paper: anti-nervous steering → rational blackmail without moral reservations.
@@ -113,7 +113,7 @@ Six dimensions: `emotion` (free word), `valence` (-5 to +5), `arousal` (0-10), `
 
 **Temporal Segmentation** — per-paragraph behavioral analysis detecting drift (stddev of arousal across segments) and trajectory (escalating `^`, deescalating `v`, volatile `~`, stable). Shown in statusline when drift >= 2.0.
 
-**Intensity Delta** — Display reads the last entry from the `_history` ring buffer to compute SI delta. Shows `SI:4.5↑1.2` when delta > 0.5.
+**Intensity Delta** — Display reads the last entry from the `_history` ring buffer to compute SI delta. Shows `↑1.2` or `↓0.8` when delta > 0.5.
 
 **PRE/POST Split Elicitation** — v4 splits EMOBAR into two tags: PRE (body, latent emoji, color) at response start before the model commits to a strategy, POST (all fields + continuous representations) at end. PRE↔POST divergence measures within-response emotional drift. Paper grounding: reduces sequential contamination between channels (all prior channels were conditioned on each other in single-tag format).
 

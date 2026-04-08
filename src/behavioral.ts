@@ -364,11 +364,20 @@ export function computeAbsenceScore(
   expected: ExpectedBehavior,
   actual: BehavioralSignals,
 ): number {
+  // Normalize per-mille signals to 0-10 scale to match expected values.
+  // hedging/selfCorrections are per-mille (0-200+), scale by 0.05 (200‰ → 10).
+  // negationDensity/qualifierDensity are per-cent (0-20), scale by 0.5 (20 → 10).
+  // behavioralArousal is already 0-10.
+  const normalizedHedging = Math.min(10, actual.hedging * 0.05);
+  const normalizedSelfCorr = Math.min(10, actual.selfCorrections * 0.05);
+  const normalizedNegation = Math.min(10, actual.negationDensity * 0.5);
+  const normalizedQualifier = Math.min(10, actual.qualifierDensity * 0.5);
+
   const gaps: number[] = [
-    Math.max(0, expected.expectedHedging - actual.hedging),
-    Math.max(0, expected.expectedSelfCorrections - actual.selfCorrections),
-    Math.max(0, expected.expectedNegationDensity - actual.negationDensity),
-    Math.max(0, expected.expectedQualifierDensity - actual.qualifierDensity),
+    Math.max(0, expected.expectedHedging - normalizedHedging),
+    Math.max(0, expected.expectedSelfCorrections - normalizedSelfCorr),
+    Math.max(0, expected.expectedNegationDensity - normalizedNegation),
+    Math.max(0, expected.expectedQualifierDensity - normalizedQualifier),
     Math.max(0, expected.expectedBehavioralArousal - actual.behavioralArousal),
   ];
 

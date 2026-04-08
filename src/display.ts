@@ -1,4 +1,5 @@
 import type { EmoBarState } from "./types.js";
+import { hexToLightness } from "./color.js";
 
 // ANSI color helpers (zero deps)
 const esc = (code: string) => `\x1b[${code}m`;
@@ -58,19 +59,11 @@ function miniBar(value: number): string {
 
 // --- Depth stress: computed from leak channels ---
 
-function hexToLightness(hex: string): number {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  return ((max + min) / 2) * 100;
-}
-
 /**
  * Compute "depth stress" from leak channels (color, pH, seismic, somatic).
  * These are less controllable than self-report — what leaks through.
  */
-function computeDepthStress(state: EmoBarState): number | null {
+export function computeDepthStress(state: EmoBarState): number | null {
   let sum = 0;
   let weights = 0;
 
@@ -232,7 +225,7 @@ export function formatCompact(state: EmoBarState | null): string {
 //
 //  Line 1 SURFACE: 😊⟩3⟨😰 focused +3 C:8 K:9 A:4 L:6
 //  Line 2 DEPTH:   ██░░░░ 2.3│████████ 6.2  L:28 pH:2 ⚡6/35/12 ⟨hold line⟩ [jaw set]
-//  Line 3 GAP:     DIV:5.3↑1.2  [MIN:2.5] [CRC] ⬈ [unc] [dfl] [msk]
+//  Line 3 GAP:     DIV:5.3↑1.2  [MIN:2.5] [CRC] ⬈ [UNC] [OPC] [MSK]
 // ============================================================
 
 export function formatState(state: EmoBarState | null): string {

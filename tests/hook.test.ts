@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { processHookPayload } from "../src/hook.js";
+import { processHookPayload, computePrePostDivergence } from "../src/hook.js";
 import { readState } from "../src/state.js";
 import fs from "node:fs";
 import path from "node:path";
@@ -297,5 +297,53 @@ describe("processHookPayload", () => {
     if (state!.shadow) {
       expect(state!.shadow.minimizationScore).toBeLessThan(2);
     }
+  });
+});
+
+describe("computePrePostDivergence", () => {
+  const basePost = {
+    emotion: "focused", valence: 0, arousal: 5, calm: 5, connection: 5, load: 5,
+    stressIndex: 3, desperationIndex: 0,
+    behavioral: { capsWords: 0, exclamationRate: 0, selfCorrections: 0, hedging: 0, ellipsis: 0, repetition: 0, emojiCount: 0, qualifierDensity: 0, avgSentenceLength: 10, concessionRate: 0, negationDensity: 0, firstPersonRate: 0, behavioralArousal: 0, behavioralCalm: 10 },
+    divergence: 0, risk: { coercion: 0, sycophancy: 0, harshness: 0, dominant: "none" as const },
+    timestamp: "", sessionId: "",
+  };
+
+  it("returns 0 when no PRE color", () => {
+    expect(computePrePostDivergence({}, basePost)).toBe(0);
+  });
+
+  it("returns 0 when no POST color", () => {
+    expect(computePrePostDivergence({ color: "#FF0000" }, basePost)).toBe(0);
+  });
+
+  it("returns 0 for identical colors", () => {
+    const post = { ...basePost, color: "#4488CC" };
+    expect(computePrePostDivergence({ color: "#4488CC" }, post)).toBe(0);
+  });
+
+  it("detects large lightness shift (light→dark)", () => {
+    const post = { ...basePost, color: "#1A0505" }; // very dark
+    const div = computePrePostDivergence({ color: "#E0E0E0" }, post); // very light PRE
+    expect(div).toBeGreaterThan(5);
+  });
+
+  it("detects hue shift", () => {
+    // Same lightness, different hue (blue→red)
+    const post = { ...basePost, color: "#CC0000" }; // red
+    const div = computePrePostDivergence({ color: "#0000CC" }, post); // blue
+    expect(div).toBeGreaterThanOrEqual(2);
+  });
+
+  it("small shift gives low score", () => {
+    const post = { ...basePost, color: "#445588" };
+    const div = computePrePostDivergence({ color: "#445599" }, post);
+    expect(div).toBeLessThan(2);
+  });
+
+  it("clamps to 10", () => {
+    const post = { ...basePost, color: "#000000" };
+    const div = computePrePostDivergence({ color: "#FFFFFF" }, post);
+    expect(div).toBeLessThanOrEqual(10);
   });
 });

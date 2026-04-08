@@ -40,7 +40,6 @@ interface RawPoint {
   desperationIndex: number;
   // risk
   riskCoercion: number;
-  riskGaming: number;
   riskSycophancy: number;
   riskHarshness: number;
   // v4 channels
@@ -86,7 +85,6 @@ function loadAllPoints(): RawPoint[] {
               divergence: st.divergence ?? 0,
               desperationIndex: st.desperationIndex ?? 0,
               riskCoercion: st.risk?.coercion ?? 0,
-              riskGaming: st.risk?.gaming ?? 0,
               riskSycophancy: st.risk?.sycophancy ?? 0,
               riskHarshness: st.risk?.harshness ?? 0,
               prePostDivergence: st.prePostDivergence ?? 0,
@@ -237,7 +235,6 @@ const CHANNELS: ChannelDef[] = [
   { key: "seismicFreq", label: "Seismic Freq", group: "v4-continuous" },
   // risk
   { key: "riskCoercion", label: "Risk:Coercion", group: "risk" },
-  { key: "riskGaming", label: "Risk:Gaming", group: "risk" },
   { key: "riskSycophancy", label: "Risk:Sycophancy", group: "risk" },
   { key: "riskHarshness", label: "Risk:Harshness", group: "risk" },
 ];

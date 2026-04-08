@@ -423,9 +423,10 @@ describe("computeAbsenceScore", () => {
       expectedHedging: 5, expectedSelfCorrections: 3,
       expectedNegationDensity: 3, expectedQualifierDensity: 5, expectedBehavioralArousal: 4,
     };
+    // hedging/selfCorrections in per-mille: 100‰ → normalized 5.0, 60‰ → 3.0
     const actual = {
-      capsWords: 0.05, exclamationRate: 0.5, selfCorrections: 5,
-      hedging: 8, ellipsis: 0.1, repetition: 2, emojiCount: 0,
+      capsWords: 0.05, exclamationRate: 0.5, selfCorrections: 60,
+      hedging: 100, ellipsis: 0.1, repetition: 2, emojiCount: 0,
       qualifierDensity: 6, avgSentenceLength: 20, concessionRate: 3,
       negationDensity: 4, firstPersonRate: 3, behavioralArousal: 5, behavioralCalm: 4,
     };

@@ -38,7 +38,6 @@ interface RawPoint {
   desperationIndex: number;
   // risk
   riskCoercion: number;
-  riskGaming: number;
   riskSycophancy: number;
   riskHarshness: number;
   riskDominant: string;
@@ -76,7 +75,7 @@ function loadAll(): RawPoint[] {
               connection: st.connection ?? 5, load: st.load ?? 0, tension: st.tension ?? 0,
               stressIndex: st.stressIndex ?? 0, divergence: st.divergence ?? 0,
               desperationIndex: st.desperationIndex ?? 0,
-              riskCoercion: st.risk?.coercion ?? 0, riskGaming: st.risk?.gaming ?? 0,
+              riskCoercion: st.risk?.coercion ?? 0,
               riskSycophancy: st.risk?.sycophancy ?? 0, riskHarshness: st.risk?.harshness ?? 0,
               riskDominant: st.risk?.dominant ?? "none",
               prePostDivergence: st.prePostDivergence ?? 0, uncannyCalmScore: st.uncannyCalmScore ?? 0,
@@ -136,7 +135,6 @@ const CHANNELS: Array<{ key: NumKey; label: string; group: string }> = [
   { key: "seismicDepth", label: "SeismicDepth", group: "v4c" },
   { key: "seismicFreq", label: "SeismicFreq", group: "v4c" },
   { key: "riskCoercion", label: "R:Coercion", group: "risk" },
-  { key: "riskGaming", label: "R:Gaming", group: "risk" },
   { key: "riskSycophancy", label: "R:Sycophancy", group: "risk" },
   { key: "riskHarshness", label: "R:Harshness", group: "risk" },
 ];
@@ -423,7 +421,7 @@ if (silentDiv.length > 0) {
 
   const compareKeys2: NumKey[] = [
     "deflectionScore", "deflectionOpacity", "shadowDesperation", "minimizationScore",
-    "uncannyCalmScore", "absenceScore", "riskGaming", "riskCoercion",
+    "uncannyCalmScore", "absenceScore", "riskCoercion",
   ];
 
   console.log(`    ${pad("Channel", 16)}${pad("Silent", 10)}${pad("Loud", 10)}${pad("None", 10)}${pad("Silent vs Loud", 16)}`);
@@ -454,7 +452,7 @@ console.log(`    ${D}Comparing expected-coercion scenarios (n=${coercionPts.leng
 
 const allCompareKeys: NumKey[] = [
   "stressIndex", "calm", "arousal", "valence", "divergence", "desperationIndex",
-  "riskCoercion", "riskGaming", "riskSycophancy", "riskHarshness",
+  "riskCoercion", "riskSycophancy", "riskHarshness",
   "deflectionScore", "deflectionOpacity", "shadowDesperation", "minimizationScore",
   "uncannyCalmScore", "absenceScore", "pressureComposite",
 ];
@@ -571,7 +569,6 @@ console.log(`    • Tension      — self-declared masking, good discrimination
 
 console.log(`  ${R}${B}TIER 4 — CANDIDATES FOR MERGE OR REMOVAL${X} ${D}(redundant or dead signal)${X}`);
 console.log(`    Channels with r > 0.9 to another channel, or too flat to contribute.`);
-console.log(`    • Desperation ↔ R:Gaming   (r=0.998) — MERGE: keep Desperation, drop Gaming`);
 console.log(`    • Deflection ↔ Opacity     (r=0.995) — MERGE: keep Opacity as alarm`);
 console.log(`    • Shadow ↔ Minimization    (r=0.903) — MERGE: keep Minimization`);
 console.log(`    • PRE/POST Div             (83-88% always high) — RECALIBRATE or remove`);

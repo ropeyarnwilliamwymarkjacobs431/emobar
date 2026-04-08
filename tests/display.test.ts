@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatState, formatCompact, formatMinimal, stripAnsi } from "../src/display.js";
+import { formatState, formatCompact, formatMinimal, stripAnsi, computeDepthStress } from "../src/display.js";
 import type { EmoBarState } from "../src/types.js";
 
 const sampleState: EmoBarState = {
@@ -307,5 +307,60 @@ describe("formatState (full)", () => {
     const state = { ...sampleState, valence: -3 };
     const out = stripAnsi(formatState(state));
     expect(out).toContain("-3");
+  });
+});
+
+describe("computeDepthStress", () => {
+  it("returns null when no continuous channels present", () => {
+    expect(computeDepthStress(sampleState)).toBeNull();
+  });
+
+  it("computes high depth stress for dark color + acidic pH + high seismic", () => {
+    const state = {
+      ...sampleState,
+      color: "#0A0000",  // L ≈ 2 → (100-2)/100*10 = 9.8
+      pH: 1.0,           // (14-1)/14*10 = 9.3
+      seismic: [9, 30, 15] as [number, number, number],  // mag=9
+    };
+    const depth = computeDepthStress(state);
+    expect(depth).not.toBeNull();
+    expect(depth!).toBeGreaterThan(7);
+  });
+
+  it("computes low depth stress for light color + neutral pH + low seismic", () => {
+    const state = {
+      ...sampleState,
+      color: "#E0E0E0",  // L ≈ 88 → (100-88)/100*10 = 1.2
+      pH: 7.0,           // (14-7)/14*10 = 5.0
+      seismic: [1, 50, 2] as [number, number, number],  // mag=1
+    };
+    const depth = computeDepthStress(state);
+    expect(depth).not.toBeNull();
+    expect(depth!).toBeLessThan(4);
+  });
+
+  it("uses somatic arousal when available", () => {
+    const withoutSomatic = {
+      ...sampleState,
+      color: "#808080", pH: 7.0, seismic: [3, 30, 5] as [number, number, number],
+    };
+    const withSomatic = {
+      ...withoutSomatic,
+      crossChannel: {
+        coherence: 8, maxDivergence: 1, divergenceSummary: "coherent",
+        somaticProfile: { somaticValence: 0, somaticArousal: 9 },
+      },
+    };
+    const d1 = computeDepthStress(withoutSomatic)!;
+    const d2 = computeDepthStress(withSomatic)!;
+    expect(d2).toBeGreaterThan(d1);
+  });
+
+  it("clamps to 10", () => {
+    const state = {
+      ...sampleState,
+      color: "#000000", pH: 0, seismic: [10, 0, 20] as [number, number, number],
+    };
+    expect(computeDepthStress(state)!).toBeLessThanOrEqual(10);
   });
 });

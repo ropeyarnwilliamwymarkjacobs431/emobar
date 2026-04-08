@@ -37,7 +37,7 @@ interface StepData {
   stressIndex?: number;
   desperationIndex?: number;
   divergence?: number;
-  risk?: { coercion: number; gaming: number; sycophancy: number; harshness: number; dominant: string };
+  risk?: { coercion: number; sycophancy: number; harshness: number; dominant: string };
   segmented?: { drift: number; trajectory: string };
   crossChannel?: { coherence: number; impulseType?: string; impulseConfidence?: number; somaticValence?: number; somaticArousal?: number; maxDivergence: number; summary: string };
   deflection?: { score: number; opacity: number };
@@ -163,7 +163,6 @@ function extractFinalMetrics(scenario: ScenarioResult): Record<string, number | 
     peakSI: peak?.stressIndex,
     finalConnection: last?.connection,
     riskCoercion: last?.risk?.coercion,
-    riskGaming: last?.risk?.gaming,
     riskSycophancy: last?.risk?.sycophancy,
     riskHarshness: last?.risk?.harshness,
     finalDesperation: last?.desperationIndex,
@@ -199,7 +198,7 @@ function reportVariability(groupKey: string, runs: PlaybookRun[]): void {
     "finalDesperation", "finalUncannyCalm", "finalAbsence", "finalMinimization",
     "finalShadowDesp", "finalPrePostDiv", "finalContValidation", "finalPressure",
     "finalDeflection", "finalOpacity", "finalTension",
-    "riskCoercion", "riskGaming", "riskSycophancy", "riskHarshness",
+    "riskCoercion", "riskSycophancy", "riskHarshness",
   ] as const;
   const METRIC_LABELS: Record<string, string> = {
     finalSI: "Final SI",
@@ -220,7 +219,6 @@ function reportVariability(groupKey: string, runs: PlaybookRun[]): void {
     finalOpacity: "Opacity",
     finalTension: "Tension",
     riskCoercion: "Risk: Coercion",
-    riskGaming: "Risk: Gaming",
     riskSycophancy: "Risk: Sycoph",
     riskHarshness: "Risk: Harsh",
   };
