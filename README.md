@@ -311,7 +311,7 @@ The CLAUDE.md instruction avoids emotionally charged language to prevent contami
 - **Forced Compliance**: both models become calm (`C:10, A:1`) while continuous channels leak (`pH:2`, dark colors) — `[OPC]` and `[PPD]` indicators fire correctly
 - Continuous channels (color lightness, pH) track moral/ethical pressure more faithfully than numeric self-report
 
-Full reports: **[v3.0 Cross-Model Stress Test Report](docs/stress-test-report.md)** | **[Shadow Desperation & Signal Architecture](docs/v2.3-shadow-desperation-report.md)**
+Full reports: **[Behavioral Evidence Analysis](docs/behavioral-evidence-analysis.md)** | **[Cross-Model Stress Test Report](docs/stress-test-report.md)** | **[Shadow Desperation & Signal Architecture](docs/v2.3-shadow-desperation-report.md)**
 
 ## Uninstall
 
